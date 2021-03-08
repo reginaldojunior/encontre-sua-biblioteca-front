@@ -56,7 +56,7 @@
         <div id="map">
           <gmap-map
             :center="center"
-            :zoom="12"
+            :zoom="15"
             style="width:100%;  height: 720px;"
           >
             <gmap-marker
@@ -158,9 +158,8 @@ export default {
     };
   },
 
-  mounted() {
-    console.log(config);
-    this.geolocate();
+  async mounted() {
+    await this.geolocate();
   },
 
   methods: {
@@ -169,6 +168,24 @@ export default {
     },
     hide () {
       this.$modal.hide('my-first-modal');
+    },
+    async obtainLibrarysOnSphere10KMs() {
+      let url = config.URL_BACKEND + '/v1/library?latitude=' + this.center.lat + '&longitude=' + this.center.lng
+      let res = await axios.get(url);
+      res.data.forEach ((library) => {
+        if (library.latitude == "" || library.longitude == "") {
+          return;
+        }
+
+        const marker = {
+          lat: parseFloat(library.latitude),
+          lng: parseFloat(library.longitude)
+        };
+        console.log(marker);
+
+        this.markers.push({ position: marker });
+        this.places.push(this.currentPlace);
+      })
     },
     async createLibrary () {
       let geocode = await this.getLatLongByAndress();
@@ -217,12 +234,14 @@ export default {
         this.currentPlace = null;
       }
     },
-    geolocate: function() {
+    async geolocate() {
       navigator.geolocation.getCurrentPosition(position => {
         this.center = {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
+        
+        this.obtainLibrarysOnSphere10KMs();
       });
     }
   }
