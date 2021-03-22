@@ -38,7 +38,7 @@
               <span class="navbar-toggler-icon icon-bar"></span>
               <span class="navbar-toggler-icon icon-bar"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end">
+            <!-- div class="collapse navbar-collapse justify-content-end">
               <form class="navbar-form">
                 <div class="input-group no-border">
                   <input type="text" value="" class="form-control" placeholder="Procure por nome...">
@@ -48,7 +48,7 @@
                   </button>
                 </div>
               </form>
-            </div>
+            </div-->
           </div>
         </nav>
         
@@ -63,7 +63,9 @@
               :key="index"
               v-for="(m, index) in markers"
               :position="m.position"
-              @click="center=m.position"
+              :title="m.title"
+              :icon="m.icon"
+              @click="infos_lib(m);"
             ></gmap-marker>
           </gmap-map>
         </div>
@@ -163,6 +165,9 @@ export default {
   },
 
   methods: {
+    infos_lib (library) {
+      this.$swal('Informação', library.title, 'info');
+    },
     show () {
       this.$modal.show('my-first-modal');
     },
@@ -181,9 +186,10 @@ export default {
           lat: parseFloat(library.latitude),
           lng: parseFloat(library.longitude)
         };
-        console.log(marker);
 
-        this.markers.push({ position: marker });
+        const image_lib = 'https://user-images.githubusercontent.com/7466894/112037744-cda09680-8b20-11eb-96a6-37e8106702cf.png';
+
+        this.markers.push({ position: marker, title: library.name, icon: image_lib });
         this.places.push(this.currentPlace);
       })
     },
@@ -199,7 +205,7 @@ export default {
       }
 
       let res = await axios.post(url, data)
-      if (res.status == 200) {
+      if (res.status == 201) {
         this.hide();
         this.$swal('Sucesso', 'Sua biblioteca foi salva com sucesso, em até 48 horas estará disponivel no site', 'success');
       } else {
@@ -223,15 +229,13 @@ export default {
       this.currentPlace = place;
     },
     addMarker() {
-      if (this.currentPlace) {
-        const marker = {
-          lat: this.currentPlace.geometry.location.lat(),
-          lng: this.currentPlace.geometry.location.lng()
-        };
-        this.markers.push({ position: marker });
+      const image = {
+        url: "https://user-images.githubusercontent.com/7466894/112037579-9f22bb80-8b20-11eb-9a8e-71f0e6f0aa3a.png"
+      };
+
+      if (this.center) {
+        this.markers.push({ position: this.center, title: "Você está aqui", icon: image });
         this.places.push(this.currentPlace);
-        this.center = marker;
-        this.currentPlace = null;
       }
     },
     async geolocate() {
@@ -240,6 +244,8 @@ export default {
           lat: position.coords.latitude,
           lng: position.coords.longitude
         };
+        
+        this.addMarker()
         
         this.obtainLibrarysOnSphere10KMs();
       });
