@@ -8,8 +8,7 @@ import config from '../config/env'
 
 Vue.use(VueGoogleMaps, {
   load: {
-    key: config.KEY_GMAPS,
-    libraries: "places" // necessary for places input
+    key: config.KEY_GMAPS
   }
 })
 
